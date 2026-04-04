@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SatisTalepYonetimi/SatisTalepYonetimi.Application/SatisTalepYonetimi.Application.csproj" />
+  <Project Path="SatisTalepYonetimi/SatisTalepYonetimi.Domain/SatisTalepYonetimi.Domain.csproj" />
+  <Project Path="SatisTalepYonetimi/SatisTalepYonetimi.Infrastructure/SatisTalepYonetimi.Infrastructure.csproj" />
+  <Project Path="SatisTalepYonetimi/SatisTalepYonetimi.WebAPI/SatisTalepYonetimi.WebAPI.csproj" />
+</Solution>
