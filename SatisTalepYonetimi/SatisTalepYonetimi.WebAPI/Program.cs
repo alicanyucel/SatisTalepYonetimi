@@ -1,8 +1,10 @@
 using DefaultCorsPolicyNugetPackage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using SatisTalepYonetimi.Application;
 using SatisTalepYonetimi.Infrastructure;
+using SatisTalepYonetimi.Infrastructure.Context;
 using SatisTalepYonetimi.WebAPI.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +45,12 @@ builder.Services.AddSwaggerGen(setup =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await context.Database.MigrateAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {
