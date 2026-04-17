@@ -8,6 +8,7 @@ using SatisTalepYonetimi.WebAPI.Abstractions;
 
 namespace SatisTalepYonetimi.WebAPI.Controllers
 {
+    [Route("api/StokTanimlari/[action]")]
     public sealed class ProductsController : ApiController
     {
         public ProductsController(IMediator mediator) : base(mediator) { }

@@ -16,6 +16,10 @@ namespace SatisTalepYonetimi.Infrastructure.Context
         public DbSet<Product> Products { get; set; }
         public DbSet<SalesRequest> SalesRequests { get; set; }
         public DbSet<SalesRequestItem> SalesRequestItems { get; set; }
+        public DbSet<Supplier> Suppliers { get; set; }
+        public DbSet<PurchaseQuote> PurchaseQuotes { get; set; }
+        public DbSet<MaintenanceCard> MaintenanceCards { get; set; }
+        public DbSet<MaintenanceTicket> MaintenanceTickets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

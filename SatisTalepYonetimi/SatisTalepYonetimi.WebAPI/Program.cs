@@ -102,6 +102,11 @@ try
 
     app.UseHangfireDashboard("/hangfire");
 
+    RecurringJob.AddOrUpdate<SatisTalepYonetimi.Application.Services.IMaintenanceCheckService>(
+        "maintenance-check",
+        service => service.CheckAndCreateTicketsAsync(),
+        Cron.Daily);
+
     app.MapControllers();
 
     ExtensionsMiddleware.CreateFirstUser(app);

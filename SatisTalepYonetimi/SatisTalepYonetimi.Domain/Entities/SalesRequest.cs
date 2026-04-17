@@ -14,6 +14,10 @@ namespace SatisTalepYonetimi.Domain.Entities
         public decimal TotalAmount { get; set; }
         public DateTime RequestDate { get; set; } = DateTime.UtcNow;
         public DateTime? ApprovedDate { get; set; }
+        public Guid? ApprovedByUserId { get; set; }
+        public AppUser? ApprovedByUser { get; set; }
+        public Guid? SelectedQuoteId { get; set; }
         public List<SalesRequestItem> Items { get; set; } = [];
+        public List<PurchaseQuote> PurchaseQuotes { get; set; } = [];
     }
 }

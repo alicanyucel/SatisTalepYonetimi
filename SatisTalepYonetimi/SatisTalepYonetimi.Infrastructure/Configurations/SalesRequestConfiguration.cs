@@ -24,6 +24,12 @@ namespace SatisTalepYonetimi.Infrastructure.Configurations
                 .HasForeignKey(p => p.RequestedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne(p => p.ApprovedByUser)
+                .WithMany()
+                .HasForeignKey(p => p.ApprovedByUserId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasMany(p => p.Items)
                 .WithOne(p => p.SalesRequest)
                 .HasForeignKey(p => p.SalesRequestId)

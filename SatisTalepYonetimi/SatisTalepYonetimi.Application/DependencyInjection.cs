@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using SatisTalepYonetimi.Application.Behaviors;
+using SatisTalepYonetimi.Application.Services;
 
 namespace SatisTalepYonetimi.Application
 {
@@ -17,6 +18,8 @@ namespace SatisTalepYonetimi.Application
             });
 
             services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+
+            services.AddScoped<IMaintenanceCheckService, MaintenanceCheckService>();
 
             return services;
         }

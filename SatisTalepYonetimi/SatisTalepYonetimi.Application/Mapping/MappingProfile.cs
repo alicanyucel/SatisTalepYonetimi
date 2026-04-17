@@ -3,6 +3,7 @@ using SatisTalepYonetimi.Application.Features.Customers.CreateCustomer;
 using SatisTalepYonetimi.Application.Features.Customers.UpdateCustomer;
 using SatisTalepYonetimi.Application.Features.Products.CreateProduct;
 using SatisTalepYonetimi.Application.Features.Products.UpdateProduct;
+using SatisTalepYonetimi.Application.Features.Suppliers.CreateSupplier;
 using SatisTalepYonetimi.Domain.Entities;
 
 namespace SatisTalepYonetimi.Application.Mapping
@@ -16,6 +17,8 @@ namespace SatisTalepYonetimi.Application.Mapping
 
             CreateMap<CreateProductCommand, Product>();
             CreateMap<UpdateProductCommand, Product>();
+
+            CreateMap<CreateSupplierCommand, Supplier>();
         }
     }
 }

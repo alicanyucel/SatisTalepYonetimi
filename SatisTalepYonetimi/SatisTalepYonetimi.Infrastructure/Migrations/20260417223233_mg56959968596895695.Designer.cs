@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SatisTalepYonetimi.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using SatisTalepYonetimi.Infrastructure.Context;
 namespace SatisTalepYonetimi.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260417223233_mg56959968596895695")]
+    partial class mg56959968596895695
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -262,7 +265,7 @@ namespace SatisTalepYonetimi.Infrastructure.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("StokTanimlari", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("SatisTalepYonetimi.Domain.Entities.PurchaseQuote", b =>
@@ -420,7 +423,7 @@ namespace SatisTalepYonetimi.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TedarikciTanimlari", (string)null);
+                    b.ToTable("Suppliers");
                 });
 
             modelBuilder.Entity("SatisTalepYonetimi.Domain.Entities.MaintenanceCard", b =>

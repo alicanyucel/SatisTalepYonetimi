@@ -8,6 +8,7 @@ namespace SatisTalepYonetimi.Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<Product> builder)
         {
+            builder.ToTable("StokTanimlari");
             builder.HasKey(p => p.Id);
             builder.Property(p => p.Name).HasColumnType("varchar(200)").IsRequired();
             builder.Property(p => p.Code).HasColumnType("varchar(50)").IsRequired();
