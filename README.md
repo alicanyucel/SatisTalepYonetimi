@@ -108,6 +108,53 @@ Swagger UI üzerinden **Authorize** butonuna tıklayarak JWT Bearer token girebi
 
 ---
 
+## 🧪 Unit Testler
+
+Proje, **xUnit** ve **NSubstitute** kullanılarak yazılmış kapsamlı unit testler içermektedir. Testler `Test` projesi altında, Application katmanındaki Command/Query Handler'ları ve Domain katmanındaki iş kurallarını doğrular.
+
+```
+Test/
+├── Domain/
+│   └── SalesRequestStatusEnumTests           → Satış talebi durum enum doğrulamaları
+└── Features/
+    ├── Customers/
+    │   ├── CreateCustomerCommandHandlerTests  → Müşteri oluşturma
+    │   ├── UpdateCustomerCommandHandlerTests  → Müşteri güncelleme
+    │   ├── DeleteCustomerCommandHandlerTests  → Müşteri silme
+    │   └── GetAllCustomersQueryHandlerTests   → Müşteri listeleme
+    ├── Products/
+    │   ├── CreateProductCommandHandlerTests   → Ürün oluşturma
+    │   ├── DeleteProductCommandHandlerTests   → Ürün silme
+    │   └── GetAllProductsQueryHandlerTests    → Ürün listeleme
+    ├── SalesRequests/
+    │   ├── CreateSalesRequestCommandHandlerTests       → Satış talebi oluşturma
+    │   ├── DeleteSalesRequestCommandHandlerTests       → Satış talebi silme
+    │   ├── UpdateSalesRequestStatusCommandHandlerTests  → Durum güncelleme
+    │   ├── GetAllSalesRequestsQueryHandlerTests        → Talep listeleme
+    │   └── GetSalesRequestByIdQueryHandlerTests        → Talep detay sorgulama
+    ├── Suppliers/
+    │   └── GetAllSuppliersQueryHandlerTests   → Tedarikçi listeleme
+    ├── PurchaseQuotes/
+    │   └── GetQuotesBySalesRequestQueryHandlerTests → Teklif sorgulama
+    ├── MaintenanceCards/
+    │   └── GetAllMaintenanceCardsQueryHandlerTests  → Bakım kartı listeleme
+    └── MaintenanceTickets/
+        └── GetAllMaintenanceTicketsQueryHandlerTests → Bakım bileti listeleme
+```
+
+### Testleri Çalıştırma
+
+```bash
+dotnet test
+```
+
+| Araç | Amaç |
+|---|---|
+| **xUnit** | Test framework |
+| **NSubstitute** | Mock/fake oluşturma |
+
+---
+
 ## 📊 Gözlemlenebilirlik
 
 - **Tracing**: OpenTelemetry → OTLP Exporter ile dağıtık izleme
