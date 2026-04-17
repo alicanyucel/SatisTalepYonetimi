@@ -55,6 +55,9 @@ Satış Talebi Oluştur (Pending)
 | **DI Scan** | Scrutor |
 | **Konteynerizasyon** | Docker & Docker Compose |
 | **CI/CD** | GitHub Actions |
+| **Unit Test** | xUnit, NSubstitute |
+| **Test Coverage** | coverlet (opencover + cobertura) |
+| **Kod Kalitesi** | SonarQube |
 
 ---
 
@@ -152,6 +155,59 @@ dotnet test
 |---|---|
 | **xUnit** | Test framework |
 | **NSubstitute** | Mock/fake oluşturma |
+
+### Test Coverage
+
+Projede `coverlet.runsettings` dosyası ile coverage ayarları yapılandırılmıştır. Bu dosya opencover + cobertura formatlarında rapor üretir ve `Migrations`, `Program`, `Startup` sınıflarını kapsam dışı bırakır.
+
+```bash
+# runsettings ile test çalıştırma
+dotnet test --settings coverlet.runsettings
+
+# veya doğrudan
+dotnet test --collect:"XPlat Code Coverage"
+```
+
+HTML rapor oluşturmak için **ReportGenerator** kullanabilirsiniz:
+
+```bash
+dotnet tool install -g dotnet-reportgenerator-globaltool
+reportgenerator -reports:"**/coverage.opencover.xml" -targetdir:"coveragereport" -reporttypes:Html
+```
+
+---
+
+## 🔍 SonarQube Kod Kalitesi Analizi
+
+Proje, **SonarQube** ile statik kod analizi ve test coverage takibi yapılacak şekilde yapılandırılmıştır. Proje kök dizinindeki `sonar-project.properties` dosyası temel SonarQube ayarlarını (proje key, exclusion'lar, coverage rapor yolları) içerir.
+
+### SonarQube ile Lokal Analiz
+
+```bash
+# SonarQube Scanner kurulumu
+dotnet tool install --global dotnet-sonarscanner
+
+# Analiz başlat
+dotnet sonarscanner begin /k:"SatisTalepYonetimi" /d:sonar.host.url="http://localhost:9000" /d:sonar.token="YOUR_TOKEN" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
+
+# Build ve test (coverage ile)
+dotnet build
+dotnet test --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+
+# Analiz sonlandır
+dotnet sonarscanner end /d:sonar.token="YOUR_TOKEN"
+```
+
+### SonarQube Dashboard Metrikleri
+
+| Metrik | Açıklama |
+|---|---|
+| **Code Coverage** | Unit testlerin kod kapsama oranı |
+| **Bugs** | Potansiyel hata tespitleri |
+| **Vulnerabilities** | Güvenlik açığı tespitleri |
+| **Code Smells** | Kod kalitesi iyileştirme önerileri |
+| **Duplications** | Tekrarlayan kod oranı |
+| **Technical Debt** | Teknik borç tahmini |
 
 ---
 
