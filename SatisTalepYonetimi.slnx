@@ -3,4 +3,5 @@
   <Project Path="SatisTalepYonetimi/SatisTalepYonetimi.Domain/SatisTalepYonetimi.Domain.csproj" />
   <Project Path="SatisTalepYonetimi/SatisTalepYonetimi.Infrastructure/SatisTalepYonetimi.Infrastructure.csproj" />
   <Project Path="SatisTalepYonetimi/SatisTalepYonetimi.WebAPI/SatisTalepYonetimi.WebAPI.csproj" />
+  <Project Path="Test/Test.csproj" Id="094d5649-f3fd-4916-b845-e0f8f8c013ae" />
 </Solution>

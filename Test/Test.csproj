@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="MockQueryable.Core" Version="8.0.0" />
+    <PackageReference Include="MockQueryable.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="MockQueryable.FakeItEasy" Version="8.0.0" />
+    <PackageReference Include="MockQueryable.Moq" Version="8.0.0" />
+    <PackageReference Include="NSubstitute" Version="5.1.0" />
+    <PackageReference Include="MockQueryable.NSubstitute" Version="7.0.3" />
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SatisTalepYonetimi\SatisTalepYonetimi.Application\SatisTalepYonetimi.Application.csproj" />
+    <ProjectReference Include="..\SatisTalepYonetimi\SatisTalepYonetimi.Domain\SatisTalepYonetimi.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>
