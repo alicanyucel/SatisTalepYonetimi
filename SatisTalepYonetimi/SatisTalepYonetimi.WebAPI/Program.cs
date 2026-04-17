@@ -1,71 +1,118 @@
 using DefaultCorsPolicyNugetPackage;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using SatisTalepYonetimi.Application;
 using SatisTalepYonetimi.Infrastructure;
-using SatisTalepYonetimi.Infrastructure.Context;
 using SatisTalepYonetimi.WebAPI.Middlewares;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .Enrich.FromLogContext()
+    .MinimumLevel.Information()
+    .CreateLogger();
 
-builder.Services.AddDefaultCors();
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
-
-builder.Services.AddExceptionHandler<ExceptionHandler>();
-builder.Services.AddProblemDetails();
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(setup =>
+try
 {
-    var jwtSecuritySheme = new OpenApiSecurityScheme
-    {
-        BearerFormat = "JWT",
-        Name = "JWT Authentication",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.Http,
-        Scheme = JwtBearerDefaults.AuthenticationScheme,
-        Description = "Put **_ONLY_** yourt JWT Bearer token on textbox below!",
+    var builder = WebApplication.CreateBuilder(args);
 
-        Reference = new OpenApiReference
+    builder.Host.UseSerilog();
+
+    builder.Services.AddMemoryCache();
+
+    builder.Services.AddOpenTelemetry()
+        .ConfigureResource(resource => resource.AddService("SatisTalepYonetimi"))
+        .WithTracing(tracing =>
         {
-            Id = JwtBearerDefaults.AuthenticationScheme,
-            Type = ReferenceType.SecurityScheme
-        }
-    };
+            tracing
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddSqlClientInstrumentation()
+                .AddOtlpExporter();
+        })
+        .WithMetrics(metrics =>
+        {
+            metrics
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddPrometheusExporter();
+        });
 
-    setup.AddSecurityDefinition(jwtSecuritySheme.Reference.Id, jwtSecuritySheme);
+    builder.Services.AddHangfire(config =>
+        config.UseSqlServerStorage(builder.Configuration.GetConnectionString("SqlServer")));
+    builder.Services.AddHangfireServer();
 
-    setup.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    { jwtSecuritySheme, Array.Empty<string>() }
-                });
-});
+    builder.Services.AddDefaultCors();
+    builder.Services.AddApplication();
+    builder.Services.AddInfrastructure(builder.Configuration);
 
-var app = builder.Build();
+    builder.Services.AddExceptionHandler<ExceptionHandler>();
+    builder.Services.AddProblemDetails();
 
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await context.Database.MigrateAsync();
+    builder.Services.AddControllers();
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen(setup =>
+    {
+        var jwtSecuritySheme = new OpenApiSecurityScheme
+        {
+            BearerFormat = "JWT",
+            Name = "JWT Authentication",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.Http,
+            Scheme = JwtBearerDefaults.AuthenticationScheme,
+            Description = "Put **_ONLY_** yourt JWT Bearer token on textbox below!",
+
+            Reference = new OpenApiReference
+            {
+                Id = JwtBearerDefaults.AuthenticationScheme,
+                Type = ReferenceType.SecurityScheme
+            }
+        };
+
+        setup.AddSecurityDefinition(jwtSecuritySheme.Reference.Id, jwtSecuritySheme);
+
+        setup.AddSecurityRequirement(new OpenApiSecurityRequirement
+                    {
+                        { jwtSecuritySheme, Array.Empty<string>() }
+                    });
+    });
+
+    var app = builder.Build();
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseSerilogRequestLogging();
+
+    app.UseHttpsRedirection();
+
+    app.UseCors();
+
+    app.UseExceptionHandler();
+
+    app.UseOpenTelemetryPrometheusScrapingEndpoint();
+
+    app.UseHangfireDashboard("/hangfire");
+
+    app.MapControllers();
+
+    ExtensionsMiddleware.CreateFirstUser(app);
+
+    app.Run();
 }
-
-if (app.Environment.IsDevelopment())
+catch (Exception ex)
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    Log.Fatal(ex, "Uygulama başlatılırken hata oluştu");
 }
-
-app.UseHttpsRedirection();
-
-app.UseCors();
-
-app.UseExceptionHandler();
-
-app.MapControllers();
-
-ExtensionsMiddleware.CreateFirstUser(app);
-
-app.Run();
+finally
+{
+    Log.CloseAndFlush();
+}
