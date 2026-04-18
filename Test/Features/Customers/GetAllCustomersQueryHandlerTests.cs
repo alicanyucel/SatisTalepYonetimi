@@ -1,6 +1,7 @@
 using MockQueryable.NSubstitute;
 using NSubstitute;
 using SatisTalepYonetimi.Application.Features.Customers.GetAllCustomers;
+using SatisTalepYonetimi.Application.Services;
 using SatisTalepYonetimi.Domain.Entities;
 using SatisTalepYonetimi.Domain.Repositories;
 
@@ -9,11 +10,12 @@ namespace Test.Features.Customers;
 public class GetAllCustomersQueryHandlerTests
 {
     private readonly ICustomerRepository _customerRepository = Substitute.For<ICustomerRepository>();
+    private readonly ICacheService _cacheService = Substitute.For<ICacheService>();
     private readonly GetAllCustomersQueryHandler _handler;
 
     public GetAllCustomersQueryHandlerTests()
     {
-        _handler = new GetAllCustomersQueryHandler(_customerRepository);
+        _handler = new GetAllCustomersQueryHandler(_customerRepository, _cacheService);
     }
 
     [Fact]

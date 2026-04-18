@@ -11,6 +11,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using SatisTalepYonetimi.Application;
 using SatisTalepYonetimi.Infrastructure;
+using SatisTalepYonetimi.Infrastructure.Middlewares;
 using SatisTalepYonetimi.WebAPI.Middlewares;
 using Serilog;
 
@@ -140,6 +141,8 @@ try
     app.UseHttpsRedirection();
 
     app.UseCors();
+
+    app.UseMiddleware<TenantMiddleware>();
 
     app.UseExceptionHandler();
 

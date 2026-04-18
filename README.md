@@ -61,6 +61,11 @@ Satış Talebi Oluştur (Pending)
 | **Yük Testi** | k6 |
 | **Health Check** | AspNetCore.HealthChecks.SqlServer |
 | **Rate Limiting** | ASP.NET Core Rate Limiting (built-in) |
+| **Message Broker** | RabbitMQ (MassTransit) |
+| **Saga Pattern** | MassTransit State Machine |
+| **Distributed Cache** | Redis (StackExchange.Redis) |
+| **Multi-Tenant** | Header bazlı tenant çözümleme |
+| **OAuth2 / OpenID Connect** | OpenIddict |
 
 ---
 

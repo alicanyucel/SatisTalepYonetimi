@@ -1,6 +1,7 @@
 using GenericRepository;
 using NSubstitute;
 using SatisTalepYonetimi.Application.Features.SalesRequests.UpdateSalesRequestStatus;
+using SatisTalepYonetimi.Application.Services;
 using SatisTalepYonetimi.Domain.Entities;
 using SatisTalepYonetimi.Domain.Repositories;
 using System.Linq.Expressions;
@@ -11,11 +12,12 @@ public class UpdateSalesRequestStatusCommandHandlerTests
 {
     private readonly ISalesRequestRepository _salesRequestRepository = Substitute.For<ISalesRequestRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
+    private readonly IEventPublisher _eventPublisher = Substitute.For<IEventPublisher>();
     private readonly UpdateSalesRequestStatusCommandHandler _handler;
 
     public UpdateSalesRequestStatusCommandHandlerTests()
     {
-        _handler = new UpdateSalesRequestStatusCommandHandler(_salesRequestRepository, _unitOfWork);
+        _handler = new UpdateSalesRequestStatusCommandHandler(_salesRequestRepository, _unitOfWork, _eventPublisher);
     }
 
     [Theory]

@@ -1,5 +1,7 @@
 using GenericRepository;
 using MediatR;
+using SatisTalepYonetimi.Application.Events;
+using SatisTalepYonetimi.Application.Services;
 using SatisTalepYonetimi.Domain.Enums;
 using SatisTalepYonetimi.Domain.Repositories;
 using TS.Result;
@@ -8,7 +10,8 @@ namespace SatisTalepYonetimi.Application.Features.SalesRequests.UpdateSalesReque
 {
     internal sealed class UpdateSalesRequestStatusCommandHandler(
         ISalesRequestRepository salesRequestRepository,
-        IUnitOfWork unitOfWork) : IRequestHandler<UpdateSalesRequestStatusCommand, Result<string>>
+        IUnitOfWork unitOfWork,
+        IEventPublisher eventPublisher) : IRequestHandler<UpdateSalesRequestStatusCommand, Result<string>>
     {
         public async Task<Result<string>> Handle(UpdateSalesRequestStatusCommand request, CancellationToken cancellationToken)
         {
@@ -40,6 +43,15 @@ namespace SatisTalepYonetimi.Application.Features.SalesRequests.UpdateSalesReque
 
             salesRequestRepository.Update(salesRequest);
             await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Event publish
+            await eventPublisher.PublishAsync(new SalesRequestStatusChangedEvent(
+                salesRequest.Id,
+                salesRequest.RequestNumber,
+                currentStatus,
+                newStatus,
+                salesRequest.CustomerId,
+                DateTime.UtcNow), cancellationToken);
 
             var status = SalesRequestStatusEnum.FromValue(newStatus);
             return $"Satış talebi durumu '{status.Name}' olarak güncellendi";
