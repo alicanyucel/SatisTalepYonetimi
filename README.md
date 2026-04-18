@@ -58,6 +58,7 @@ Satış Talebi Oluştur (Pending)
 | **Unit Test** | xUnit, NSubstitute |
 | **Test Coverage** | coverlet (opencover + cobertura) |
 | **Kod Kalitesi** | SonarQube |
+| **Yük Testi** | k6 |
 
 ---
 
@@ -111,112 +112,77 @@ Swagger UI üzerinden **Authorize** butonuna tıklayarak JWT Bearer token girebi
 
 ---
 
-## 🧪 Unit Testler
-
-Proje, **xUnit** ve **NSubstitute** kullanılarak yazılmış kapsamlı unit testler içermektedir. Testler `Test` projesi altında, Application katmanındaki Command/Query Handler'ları ve Domain katmanındaki iş kurallarını doğrular.
-
-```
-Test/
-├── Domain/
-│   └── SalesRequestStatusEnumTests           → Satış talebi durum enum doğrulamaları
-└── Features/
-    ├── Customers/
-    │   ├── CreateCustomerCommandHandlerTests  → Müşteri oluşturma
-    │   ├── UpdateCustomerCommandHandlerTests  → Müşteri güncelleme
-    │   ├── DeleteCustomerCommandHandlerTests  → Müşteri silme
-    │   └── GetAllCustomersQueryHandlerTests   → Müşteri listeleme
-    ├── Products/
-    │   ├── CreateProductCommandHandlerTests   → Ürün oluşturma
-    │   ├── DeleteProductCommandHandlerTests   → Ürün silme
-    │   └── GetAllProductsQueryHandlerTests    → Ürün listeleme
-    ├── SalesRequests/
-    │   ├── CreateSalesRequestCommandHandlerTests       → Satış talebi oluşturma
-    │   ├── DeleteSalesRequestCommandHandlerTests       → Satış talebi silme
-    │   ├── UpdateSalesRequestStatusCommandHandlerTests  → Durum güncelleme
-    │   ├── GetAllSalesRequestsQueryHandlerTests        → Talep listeleme
-    │   └── GetSalesRequestByIdQueryHandlerTests        → Talep detay sorgulama
-    ├── Suppliers/
-    │   └── GetAllSuppliersQueryHandlerTests   → Tedarikçi listeleme
-    ├── PurchaseQuotes/
-    │   └── GetQuotesBySalesRequestQueryHandlerTests → Teklif sorgulama
-    ├── MaintenanceCards/
-    │   └── GetAllMaintenanceCardsQueryHandlerTests  → Bakım kartı listeleme
-    └── MaintenanceTickets/
-        └── GetAllMaintenanceTicketsQueryHandlerTests → Bakım bileti listeleme
-```
-
-### Testleri Çalıştırma
-
-```bash
-dotnet test
-```
-
-| Araç | Amaç |
-|---|---|
-| **xUnit** | Test framework |
-| **NSubstitute** | Mock/fake oluşturma |
-
-### Test Coverage
-
-Projede `coverlet.runsettings` dosyası ile coverage ayarları yapılandırılmıştır. Bu dosya opencover + cobertura formatlarında rapor üretir ve `Migrations`, `Program`, `Startup` sınıflarını kapsam dışı bırakır.
-
-```bash
-# runsettings ile test çalıştırma
-dotnet test --settings coverlet.runsettings
-
-# veya doğrudan
-dotnet test --collect:"XPlat Code Coverage"
-```
-
-HTML rapor oluşturmak için **ReportGenerator** kullanabilirsiniz:
-
-```bash
-dotnet tool install -g dotnet-reportgenerator-globaltool
-reportgenerator -reports:"**/coverage.opencover.xml" -targetdir:"coveragereport" -reporttypes:Html
-```
-
----
-
-## 🔍 SonarQube Kod Kalitesi Analizi
-
-Proje, **SonarQube** ile statik kod analizi ve test coverage takibi yapılacak şekilde yapılandırılmıştır. Proje kök dizinindeki `sonar-project.properties` dosyası temel SonarQube ayarlarını (proje key, exclusion'lar, coverage rapor yolları) içerir.
-
-### SonarQube ile Lokal Analiz
-
-```bash
-# SonarQube Scanner kurulumu
-dotnet tool install --global dotnet-sonarscanner
-
-# Analiz başlat
-dotnet sonarscanner begin /k:"SatisTalepYonetimi" /d:sonar.host.url="http://localhost:9000" /d:sonar.token="YOUR_TOKEN" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
-
-# Build ve test (coverage ile)
-dotnet build
-dotnet test --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-
-# Analiz sonlandır
-dotnet sonarscanner end /d:sonar.token="YOUR_TOKEN"
-```
-
-### SonarQube Dashboard Metrikleri
-
-| Metrik | Açıklama |
-|---|---|
-| **Code Coverage** | Unit testlerin kod kapsama oranı |
-| **Bugs** | Potansiyel hata tespitleri |
-| **Vulnerabilities** | Güvenlik açığı tespitleri |
-| **Code Smells** | Kod kalitesi iyileştirme önerileri |
-| **Duplications** | Tekrarlayan kod oranı |
-| **Technical Debt** | Teknik borç tahmini |
-
----
-
 ## 📊 Gözlemlenebilirlik
 
 - **Tracing**: OpenTelemetry → OTLP Exporter ile dağıtık izleme
 - **Metrics**: Prometheus exporter → `/metrics` endpoint'i
 - **Logging**: Serilog ile konsol ve dosya bazlı loglama
 - **Dashboard**: Grafana üzerinde hazır ASP.NET Core dashboard'u
+
+---
+
+## 🔥 k6 Yük Testleri
+
+Proje, [k6](https://k6.io/) ile yazılmış 3 farklı yük testi senaryosu içermektedir:
+
+```
+k6/
+├── load-test.js    → Standart yük testi (10→50 kullanıcı, tüm endpoint'ler)
+├── stress-test.js  → Stres testi (100→200→300 kullanıcı, dayanıklılık)
+└── spike-test.js   → Spike testi (ani 500 kullanıcı, toparlanma)
+```
+
+### Kurulum
+
+```bash
+# k6 kurulumu (Windows - Chocolatey)
+choco install k6
+
+# veya Docker ile
+docker pull grafana/k6
+```
+
+### Testleri Çalıştırma
+
+```bash
+# Standart yük testi
+k6 run k6/load-test.js
+
+# Stres testi
+k6 run k6/stress-test.js
+
+# Spike testi
+k6 run k6/spike-test.js
+
+# Özel URL ile çalıştırma
+k6 run -e BASE_URL=http://localhost:5000 k6/load-test.js
+
+# JWT token ile çalıştırma
+k6 run -e BASE_URL=http://localhost:5000 -e AUTH_TOKEN=your_jwt_token k6/load-test.js
+```
+
+### Test Senaryoları
+
+| Senaryo | Kullanıcı | Süre | Amaç |
+|---|---|---|---|
+| **Load Test** | 10 → 50 | ~8 dk | Normal yük altında API performansı |
+| **Stress Test** | 100 → 300 | ~26 dk | Sistemin sınırlarını belirleme |
+| **Spike Test** | 100 → 500 | ~7 dk | Ani trafik artışına dayanıklılık |
+
+### Eşik Değerler (Thresholds)
+
+| Metrik | Load Test | Stress Test | Spike Test |
+|---|---|---|---|
+| **p(95) Response Time** | < 500ms | < 1000ms | < 2000ms |
+| **Hata Oranı** | < %5 | < %10 | < %15 |
+
+### Grafana ile k6 Metrikleri
+
+k6 sonuçlarını Prometheus'a göndermek için:
+
+```bash
+K6_PROMETHEUS_RW_SERVER_URL=http://localhost:9090/api/v1/write k6 run --out experimental-prometheus-rw k6/load-test.js
+```
 
 ---
 
