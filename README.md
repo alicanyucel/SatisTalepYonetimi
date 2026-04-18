@@ -59,6 +59,8 @@ Satış Talebi Oluştur (Pending)
 | **Test Coverage** | coverlet (opencover + cobertura) |
 | **Kod Kalitesi** | SonarQube |
 | **Yük Testi** | k6 |
+| **Health Check** | AspNetCore.HealthChecks.SqlServer |
+| **Rate Limiting** | ASP.NET Core Rate Limiting (built-in) |
 
 ---
 
@@ -109,6 +111,185 @@ dotnet run --project SatisTalepYonetimi/SatisTalepYonetimi.WebAPI
 ## 🔐 API Kimlik Doğrulama
 
 Swagger UI üzerinden **Authorize** butonuna tıklayarak JWT Bearer token girebilirsiniz.
+
+---
+
+## 🧪 Unit Testler
+
+Proje, **xUnit** ve **NSubstitute** kullanılarak yazılmış kapsamlı unit testler içermektedir. Testler `Test` projesi altında, Application katmanındaki Command/Query Handler'ları ve Domain katmanındaki iş kurallarını doğrular.
+
+```
+Test/
+├── Domain/
+│   └── SalesRequestStatusEnumTests           → Satış talebi durum enum doğrulamaları
+└── Features/
+    ├── Customers/
+    │   ├── CreateCustomerCommandHandlerTests  → Müşteri oluşturma
+    │   ├── UpdateCustomerCommandHandlerTests  → Müşteri güncelleme
+    │   ├── DeleteCustomerCommandHandlerTests  → Müşteri silme
+    │   └── GetAllCustomersQueryHandlerTests   → Müşteri listeleme
+    ├── Products/
+    │   ├── CreateProductCommandHandlerTests   → Ürün oluşturma
+    │   ├── DeleteProductCommandHandlerTests   → Ürün silme
+    │   └── GetAllProductsQueryHandlerTests    → Ürün listeleme
+    ├── SalesRequests/
+    │   ├── CreateSalesRequestCommandHandlerTests       → Satış talebi oluşturma
+    │   ├── DeleteSalesRequestCommandHandlerTests       → Satış talebi silme
+    │   ├── UpdateSalesRequestStatusCommandHandlerTests  → Durum güncelleme
+    │   ├── GetAllSalesRequestsQueryHandlerTests        → Talep listeleme
+    │   └── GetSalesRequestByIdQueryHandlerTests        → Talep detay sorgulama
+    ├── Suppliers/
+    │   └── GetAllSuppliersQueryHandlerTests   → Tedarikçi listeleme
+    ├── PurchaseQuotes/
+    │   └── GetQuotesBySalesRequestQueryHandlerTests → Teklif sorgulama
+    ├── MaintenanceCards/
+    │   └── GetAllMaintenanceCardsQueryHandlerTests  → Bakım kartı listeleme
+    └── MaintenanceTickets/
+        └── GetAllMaintenanceTicketsQueryHandlerTests → Bakım bileti listeleme
+```
+
+### Testleri Çalıştırma
+
+```bash
+dotnet test
+```
+
+| Araç | Amaç |
+|---|---|
+| **xUnit** | Test framework |
+| **NSubstitute** | Mock/fake oluşturma |
+| **MockQueryable** | IQueryable mock desteği |
+| **FluentAssertions** | Okunabilir assertion'lar |
+
+### Test Coverage
+
+Projede `coverlet.runsettings` dosyası ile coverage ayarları yapılandırılmıştır. Opencover + Cobertura formatlarında rapor üretir, `Migrations`, `Program`, `Startup` sınıflarını kapsam dışı bırakır.
+
+```bash
+# runsettings ile test çalıştırma
+dotnet test --settings coverlet.runsettings
+
+# HTML rapor oluşturma
+dotnet tool install -g dotnet-reportgenerator-globaltool
+reportgenerator -reports:"**/coverage.opencover.xml" -targetdir:"coveragereport" -reporttypes:Html
+```
+
+---
+
+## 🔍 SonarQube Kod Kalitesi Analizi
+
+Proje kök dizinindeki `sonar-project.properties` dosyası temel SonarQube ayarlarını (proje key, exclusion'lar, coverage rapor yolları) içerir.
+
+### SonarQube ile Lokal Analiz
+
+```bash
+dotnet tool install --global dotnet-sonarscanner
+
+dotnet sonarscanner begin /k:"SatisTalepYonetimi" /d:sonar.host.url="http://localhost:9000" /d:sonar.token="YOUR_TOKEN" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
+
+dotnet build
+dotnet test --settings coverlet.runsettings
+
+dotnet sonarscanner end /d:sonar.token="YOUR_TOKEN"
+```
+
+### SonarQube Dashboard Metrikleri
+
+| Metrik | Açıklama |
+|---|---|
+| **Code Coverage** | Unit testlerin kod kapsama oranı |
+| **Bugs** | Potansiyel hata tespitleri |
+| **Vulnerabilities** | Güvenlik açığı tespitleri |
+| **Code Smells** | Kod kalitesi iyileştirme önerileri |
+| **Duplications** | Tekrarlayan kod oranı |
+| **Technical Debt** | Teknik borç tahmini |
+
+---
+
+## 🔄 CI/CD Pipeline (GitHub Actions)
+
+`.github/workflows/ci-cd.yml` dosyası ile otomatik build, test, coverage, SonarQube analizi ve Docker image push işlemleri yapılmaktadır.
+
+```
+CI/CD Pipeline
+├── build        → Restore, Build, Test (Coverage ile), HTML Rapor, Artifact Upload
+├── sonarqube    → SonarScanner ile statik kod analizi + coverage
+└── docker       → Docker Hub'a image build & push (sadece master push)
+```
+
+### Gerekli GitHub Secrets
+
+| Secret | Açıklama |
+|---|---|
+| `SONAR_PROJECT_KEY` | SonarQube proje anahtarı |
+| `SONAR_HOST_URL` | SonarQube sunucu adresi |
+| `SONAR_TOKEN` | SonarQube authentication token |
+| `DOCKER_USERNAME` | Docker Hub kullanıcı adı |
+| `DOCKER_PASSWORD` | Docker Hub şifresi |
+
+---
+
+## 🗂️ Proje Yapısı
+
+```
+SatisTalepYonetimi/
+├── .github/workflows/
+│   └── ci-cd.yml                          → CI/CD pipeline
+├── grafana/provisioning/
+│   ├── dashboards/
+│   │   ├── dashboard.yml
+│   │   └── json/aspnetcore-dashboard.json
+│   └── datasources/datasource.yml
+├── k6/
+│   ├── load-test.js                       → Standart yük testi
+│   ├── stress-test.js                     → Stres testi
+│   └── spike-test.js                      → Spike testi
+├── prometheus/
+│   └── prometheus.yml
+├── SatisTalepYonetimi/
+│   ├── SatisTalepYonetimi.Domain/
+│   │   ├── Entities/                      → Customer, Product, SalesRequest, SalesRequestItem,
+│   │   │                                    Supplier, PurchaseQuote, MaintenanceCard,
+│   │   │                                    MaintenanceTicket, AppUser
+│   │   ├── Enums/                         → SalesRequestStatusEnum, MaintenanceStatusEnum
+│   │   └── Repositories/                  → ICustomerRepository, IProductRepository,
+│   │                                        ISalesRequestRepository, ISalesRequestItemRepository,
+│   │                                        ISupplierRepository, IPurchaseQuoteRepository,
+│   │                                        IMaintenanceCardRepository, IMaintenanceTicketRepository
+│   ├── SatisTalepYonetimi.Application/
+│   │   ├── Features/
+│   │   │   ├── Customers/                 → Create, Update, Delete, GetAll
+│   │   │   ├── Products/                  → Create, Update, Delete, GetAll
+│   │   │   ├── SalesRequests/             → Create, Delete, UpdateStatus, GetAll, GetById
+│   │   │   ├── Suppliers/                 → Create, Delete, GetAll
+│   │   │   ├── PurchaseQuotes/            → Create, ApproveQuote, SubmitForApproval, GetBySalesRequest
+│   │   │   ├── MaintenanceCards/          → Create, Delete, GetAll
+│   │   │   └── MaintenanceTickets/        → UpdateStatus, GetAll
+│   │   ├── Mapping/MappingProfile.cs
+│   │   ├── Services/IMaintenanceCheckService.cs
+│   │   └── DependencyInjection.cs
+│   ├── SatisTalepYonetimi.Infrastructure/
+│   │   ├── Context/ApplicationDbContext.cs
+│   │   ├── Configurations/               → Entity type configurations
+│   │   ├── Repositories/                 → Repository implementasyonları
+│   │   └── Migrations/
+│   └── SatisTalepYonetimi.WebAPI/
+│       ├── Controllers/                   → Customers, Products, SalesRequests, Suppliers,
+│       │                                    PurchaseQuotes, MaintenanceCards, MaintenanceTickets
+│       ├── Middlewares/                   → ExceptionHandler, ExtensionsMiddleware
+│       ├── Program.cs
+│       ├── appsettings.json
+│       └── appsettings.Docker.json
+├── Test/
+│   ├── Domain/                            → Enum testleri
+│   └── Features/                          → Command/Query handler testleri
+├── coverlet.runsettings                   → Test coverage ayarları
+├── sonar-project.properties               → SonarQube yapılandırması
+├── Dockerfile
+├── docker-compose.yml
+├── entrypoint.sh
+└── .dockerignore
+```
 
 ---
 
@@ -186,6 +367,137 @@ K6_PROMETHEUS_RW_SERVER_URL=http://localhost:9090/api/v1/write k6 run --out expe
 
 ---
 
+## 🏥 Health Check
+
+Uygulama, ASP.NET Core Health Checks altyapısı ile sağlık durumu izleme endpoint'leri sunmaktadır:
+
+| Endpoint | Açıklama |
+|---|---|
+| `GET /health` | Tüm kontrollerin detaylı JSON raporu |
+| `GET /health/ready` | Veritabanı bağlantı durumu (Readiness) |
+| `GET /health/live` | Uygulama çalışma durumu (Liveness) |
+
+### Örnek `/health` Yanıtı
+
+```json
+{
+  "status": "Healthy",
+  "checks": [
+    {
+      "name": "sqlserver",
+      "status": "Healthy",
+      "description": null,
+      "duration": "45.23ms"
+    },
+    {
+      "name": "self",
+      "status": "Healthy",
+      "description": null,
+      "duration": "0.12ms"
+    }
+  ],
+  "totalDuration": "46.01ms"
+}
+```
+
+### Kontroller
+
+| Kontrol | Tag | Açıklama |
+|---|---|---|
+| **SQL Server** | `db`, `sql` | Veritabanı bağlantısını doğrular |
+| **Self** | `self` | Uygulamanın ayakta olduğunu doğrular |
+
+> Kubernetes veya Docker ortamlarında `liveness` ve `readiness` probe olarak kullanılabilir.
+
+---
+
+## 🚦 Rate Limiting
+
+API, ASP.NET Core'un built-in Rate Limiting middleware'i ile istek sınırlandırma desteği sunmaktadır. Aşırı istek durumunda `429 Too Many Requests` yanıtı döner.
+
+### Politikalar
+
+| Politika | Tür | Limit | Pencere | Kuyruk |
+|---|---|---|---|---|
+| **fixed** | Fixed Window | 100 istek | 1 dakika | 10 |
+| **sliding** | Sliding Window | 60 istek | 1 dakika (6 segment) | 5 |
+| **Global** | IP bazlı Fixed Window | 200 istek | 1 dakika | - |
+
+### Kullanım
+
+Global limiter tüm endpoint'lere otomatik olarak uygulanır. Belirli bir controller veya action'a özel politika atamak için:
+
+```csharp
+[EnableRateLimiting("fixed")]
+[HttpGet]
+public async Task<IActionResult> GetAll() { ... }
+
+[DisableRateLimiting]
+[HttpGet("health")]
+public IActionResult Health() => Ok();
+```
+
+### Yanıt Başlıkları
+
+| Başlık | Açıklama |
+|---|---|
+| `Retry-After` | Yeniden istek göndermek için bekleme süresi |
+| `X-RateLimit-Limit` | Toplam izin verilen istek sayısı |
+| `X-RateLimit-Remaining` | Kalan istek sayısı |
+
+---
+
 ## 📄 Lisans
 
 Bu proje MIT lisansı ile lisanslanmıştır.
+
+---
+
+## 🗺️ Yol Haritası (Roadmap)
+
+Projenin gelecek sürümlerinde planlanmakta olan geliştirmeler:
+
+| Özellik | Açıklama | Durum |
+|---|---|---|
+| **Event-Driven Architecture** | RabbitMQ / Kafka ile asenkron olay tabanlı iletişim. Satış talebi onaylandığında otomatik bildirim, tedarikçi bilgilendirme vb. | 🔜 Planlandı |
+| **Distributed Transactions / Saga Pattern** | Mikroservis mimarisine geçişte dağıtık işlem tutarlılığı için Saga (Orchestration / Choreography) pattern uygulaması | 🔜 Planlandı |
+| **Multi-Tenant Yapı** | Tek uygulama üzerinden birden fazla şirkete (tenant) hizmet verebilen çoklu kiracı mimarisi (DB-per-tenant / Schema-per-tenant) | 🔜 Planlandı |
+| **Distributed Caching (Redis)** | Redis ile dağıtık önbellekleme. Sık sorgulanan veriler (ürün listesi, müşteri listesi) için performans artışı | 🔜 Planlandı |
+| **API Gateway** | Ocelot / YARP ile API Gateway katmanı. Merkezi routing, load balancing, rate limiting ve authentication | 🔜 Planlandı |
+| **Advanced Security (OAuth2 / OpenIddict)** | OpenIddict veya IdentityServer ile OAuth2 / OpenID Connect desteği. Authorization Code, Client Credentials flow'ları | 🔜 Planlandı |
+
+### Detaylar
+
+#### 🐰 Event-Driven Architecture (RabbitMQ / Kafka)
+- Satış talebi durumu değiştiğinde event publish
+- Tedarikçilere otomatik e-posta / bildirim
+- PurchaseQuote onaylandığında stok güncelleme event'i
+- Dead letter queue ile hata yönetimi
+- Outbox pattern ile event güvenilirliği
+
+#### 🔄 Saga Pattern
+- Satış talebi → Teklif toplama → Onay → Satınalma akışı için orchestration-based saga
+- Compensating transaction'lar ile geri alma desteği
+- Saga state machine ile durum takibi
+
+#### 🏢 Multi-Tenant
+- Tenant bazlı veri izolasyonu
+- Subdomain / header bazlı tenant çözümleme
+- Tenant-specific konfigürasyon ve özelleştirme
+
+#### ⚡ Redis Caching
+- `IDistributedCache` ile entegrasyon
+- Cache invalidation stratejileri
+- Sık erişilen endpoint'lerde response caching
+
+#### 🌐 API Gateway
+- Merkezi authentication ve authorization
+- Rate limiting politikalarının gateway seviyesinde yönetimi
+- Request/response transformation
+- Circuit breaker pattern
+
+#### 🔐 Advanced Security
+- OAuth2 Authorization Code flow (SPA / mobil uygulama)
+- Client Credentials flow (servisler arası iletişim)
+- Refresh token desteği
+- Scope bazlı yetkilendirme
